@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wake on LAN - Dashboard</title>
+    <title>Wake on LAN - Broadcast</title>
     <style>
         :root {
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --background: #0b0f19;
-            --card-bg: #111827;
-            --input-bg: #1f2937;
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: #0f172a;
+            --card-bg: #1e293b;
+            --input-bg: #0f172a;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--background);
             color: var(--text);
             display: flex;
@@ -29,107 +29,106 @@
         .card {
             background-color: var(--card-bg);
             padding: 2.5rem;
-            border-radius: 1.25rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
             width: 100%;
-            max-width: 420px;
-            border: 1px solid #374151;
+            max-width: 400px;
+            border: 1px solid #334155;
         }
 
-        h1 { font-size: 1.75rem; margin-top: 0; margin-bottom: 0.5rem; text-align: center; font-weight: 700; }
-        p { color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1.5rem; }
+        h1 { font-size: 1.6rem; margin-top: 0; margin-bottom: 0.5rem; text-align: center; }
+        p { color: var(--text-muted); font-size: 0.875rem; text-align: center; margin-bottom: 1.75rem; }
+        .form-group { margin-bottom: 1.25rem; }
         label { display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 500; }
         
         input {
-            width: 100%; padding: 0.85rem; border-radius: 0.6rem; border: 1px solid #4b5563;
+            width: 100%; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #334155;
             background-color: var(--input-bg); color: white; font-size: 1rem; box-sizing: border-box;
-            transition: all 0.2s;
         }
 
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
         
         button {
-            width: 100%; padding: 0.9rem; background-color: var(--primary); color: white;
-            border: none; border-radius: 0.6rem; font-size: 1rem; font-weight: 600;
+            width: 100%; padding: 0.85rem; background-color: var(--primary); color: white;
+            border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: 600;
             cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
         }
 
         button:hover { background-color: var(--primary-hover); }
         
-        .status { margin-top: 1.25rem; padding: 0.85rem; border-radius: 0.6rem; font-size: 0.9rem; text-align: center; display: none; font-weight: 500; }
-        .success { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #059669; }
-        .error { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid #dc2626; }
+        .status { margin-top: 1.25rem; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; text-align: center; display: none; }
+        .success { background-color: #065f46; color: #34d399; border: 1px solid #059669; }
+        .error { background-color: #991b1b; color: #fca5a5; border: 1px solid #dc2626; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>Wake on LAN Cloud ⚡</h1>
-    <p>Ligue seus dispositivos remotamente</p>
+    <h1>Wake on LAN (Broadcast) 🌐</h1>
+    <p>Envie o sinal direcionado para sua rede</p>
 
     <form id="wolForm">
         <div class="form-group">
-            <label for="mac">Endereço MAC do Computador</label>
-            <input type="text" id="mac" placeholder="00:11:22:33:44:55" required 
+            <label for="broadcast">IP de Broadcast ou DDNS de Destino</label>
+            <input type="text" id="broadcast" placeholder="Ex: 192.168.1.255 ou seu.ddns.net" required>
+        </div>
+
+        <div class="form-group">
+            <label for="mac">Endereço MAC do Alvo (Obrigatório do WoL)</label>
+            <input type="text" id="mac" placeholder="AA:BB:CC:DD:EE:FF" required 
                    pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$">
         </div>
 
         <div class="form-group">
-            <label for="host">Endereço DDNS / IP de Transmissão</label>
-            <input type="text" id="host" placeholder="exemplo.ddns.net" required>
-        </div>
-
-        <div class="form-group">
-            <label for="port">Porta UDP (Padrão: 9)</label>
+            <label for="port">Porta UDP (Geralmente 9)</label>
             <input type="number" id="port" value="9" min="1" max="65535" required>
         </div>
 
-        <button type="submit">Ligar Computador</button>
+        <button type="submit">Enviar via Transmissão</button>
     </form>
 
     <div id="statusMessage" class="status"></div>
 </div>
 
 <script>
-    // Recupera dados salvos anteriormente no navegador ao carregar a página
+    // Recupera dados salvos localmente
     document.addEventListener('DOMContentLoaded', () => {
-        if(localStorage.getItem('wol_mac')) document.getElementById('mac').value = localStorage.getItem('wol_mac');
-        if(localStorage.getItem('wol_host')) document.getElementById('host').value = localStorage.getItem('wol_host');
-        if(localStorage.getItem('wol_port')) document.getElementById('port').value = localStorage.getItem('wol_port');
+        if(localStorage.getItem('wol_bc_mac')) document.getElementById('mac').value = localStorage.getItem('wol_bc_mac');
+        if(localStorage.getItem('wol_bc_dest')) document.getElementById('broadcast').value = localStorage.getItem('wol_bc_dest');
+        if(localStorage.getItem('wol_bc_port')) document.getElementById('port').value = localStorage.getItem('wol_bc_port');
     });
 
     document.getElementById('wolForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const mac = document.getElementById('mac').value.trim();
-        const host = document.getElementById('host').value.trim();
+        const broadcast = document.getElementById('broadcast').value.trim();
         const port = document.getElementById('port').value.trim();
         const statusDiv = document.getElementById('statusMessage');
 
-        // Salva os dados localmente para o próximo acesso
-        localStorage.setItem('wol_mac', mac);
-        localStorage.setItem('wol_host', host);
-        localStorage.setItem('wol_port', port);
+        // Salva os dados no navegador do usuário
+        localStorage.setItem('wol_bc_mac', mac);
+        localStorage.setItem('wol_bc_dest', broadcast);
+        localStorage.setItem('wol_bc_port', port);
 
         statusDiv.style.display = 'block';
         statusDiv.className = 'status';
-        statusDiv.innerText = 'Transmitindo Magic Packet...';
+        statusDiv.innerText = 'Enviando pacote mágico...';
 
         try {
             const response = await fetch('/api/wake', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mac, host, port: parseInt(port) })
+                body: JSON.stringify({ mac, broadcast, port: parseInt(port) })
             });
 
             const data = await response.json();
 
             if (response.ok && data.success) {
                 statusDiv.className = 'status success';
-                statusDiv.innerText = '⚡ Sinal enviado com sucesso!';
+                statusDiv.innerText = '⚡ Transmissão executada com sucesso!';
             } else {
-                throw new Error(data.error || 'Erro desconhecido na transmissão.');
+                throw new Error(data.error || 'Erro na transmissão.');
             }
         } catch (error) {
             statusDiv.className = 'status error';
