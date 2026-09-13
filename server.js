@@ -3,8 +3,20 @@ const cors = require('cors');
 const wol = require('node-wol');
 
 const app = express();
-app.use(cors());
+
+// Configuração explícita de CORS para liberar o seu site do GitHub Pages
+app.use(cors({
+    origin: '*',
+    methods: ['POST', 'GET', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
+
+// Rota para testar se o servidor responde de forma limpa
+app.get('/', (req, res) => {
+    res.json({ status: "Servidor WoL ativo e operando perfeitamente!" });
+});
 
 app.post('/wake', (req, res) => {
     const { address, broadcast, port } = req.body;
@@ -13,19 +25,17 @@ app.post('/wake', (req, res) => {
         return res.status(400).json({ error: 'DDNS e IP de Broadcast são obrigatórios.' });
     }
 
-    // Configura o pacote para usar o DDNS externamente e mirar no Broadcast configurado
     const options = {
-        address: address, 
+        address: address,
         port: port || 9
     };
 
-    // Envia o pacote direcionado ao endereço de IP de Broadcast fornecido
     wol.wake(broadcast, options, (error) => {
         if (error) {
             console.error(error);
             return res.status(500).json({ error: 'Falha ao enviar o pacote via Broadcast.' });
         }
-        return res.json({ success: true, message: `Pacote enviado para o broadcast ${broadcast} via ${address}!` });
+        return res.json({ success: true, message: `Pacote enviado para o broadcast ${broadcast}!` });
     });
 });
 
