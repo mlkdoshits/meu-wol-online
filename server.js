@@ -10,23 +10,24 @@ app.use(express.json());
 app.use(express.static('public'));
 
 app.post('/api/wake', (req, res) => {
-    const { mac, broadcast, port } = req.body;
+    const { mac, ddns, broadcast, port } = req.body;
 
-    // O MAC continua sendo obrigatório por especificação do protocolo de hardware (WoL)
-    if (!mac || !broadcast) {
-        return res.status(400).json({ error: 'O Endereço MAC e o IP de Broadcast/DDNS são obrigatórios.' });
+    // Validação dos parâmetros obrigatórios
+    if (!mac || !ddns) {
+        return res.status(400).json({ error: 'O Endereço MAC e o DDNS são obrigatórios para envio externo.' });
     }
 
     const targetPort = parseInt(port) || 9;
 
-    // Dispara o pacote mágico usando o IP de Broadcast ou DDNS fornecido pelo usuário
-    wol.wake(mac, { address: broadcast, port: targetPort }, (error) => {
+    // Na nuvem (Render), enviamos o pacote para o DDNS público.
+    // O IP de broadcast interno serve como referência de configuração da sua rede doméstica.
+    wol.wake(mac, { address: ddns, port: targetPort }, (error) => {
         if (error) {
-            console.error('Erro ao enviar o pacote:', error);
-            return res.status(500).json({ error: 'Erro interno ao emitir o pacote de transmissão.' });
+            console.error('Erro no envio do pacote:', error);
+            return res.status(500).json({ error: 'Erro interno ao emitir o pacote.' });
         }
-        console.log(`Sucesso: Pacote enviado para MAC ${mac} via Broadcast/DDNS: ${broadcast}:${targetPort}`);
-        return res.json({ success: true, message: 'Pacote de transmissão enviado!' });
+        console.log(`Sucesso: Pacote enviado para MAC ${mac} via DDNS ${ddns}:${targetPort} (Foco na rede: ${broadcast || 'Não informada'})`);
+        return res.json({ success: true, message: 'Pacote disparado com sucesso!' });
     });
 });
 
