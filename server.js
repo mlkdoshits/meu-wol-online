@@ -6,6 +6,9 @@ const dns = require('dns');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 🔒 SUA SENHA CONFIGURADA COM SUCESSO
+const SENHA_SECRETA = "12345fsc"; 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
@@ -21,7 +24,12 @@ const resolverDNS = (hostname) => {
 };
 
 app.post('/api/wake', async (req, res) => {
-    const { mac, ddns, port } = req.body;
+    const { mac, ddns, port, password } = req.body;
+
+    // Validação estrita da senha escolhida por você
+    if (!password || password !== SENHA_SECRETA) {
+        return res.status(401).json({ error: 'Senha incorreta ou não fornecida.' });
+    }
 
     if (!mac || !ddns) {
         return res.status(400).json({ error: 'O Endereço MAC e o DDNS são obrigatórios.' });
@@ -49,5 +57,5 @@ app.post('/api/wake', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor rodando com sucesso na porta ${PORT}`);
+    console.log(`Servidor protegido ativo na porta ${PORT}`);
 });
