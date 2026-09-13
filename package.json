@@ -1,13 +1,14 @@
 {
-  "name": "wol-backend",
-  "version": "1.0.0",
+  "name": "meu-wol-online",
+  "version": "1.1.0",
+  "description": "Interface Avançada de Wake On LAN Online",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.19.2",
-    "node-wol": "^0.1.1"
+    "cors": "^2.8.5",
+    "wake_on_lan": "^1.0.0"
   }
 }
