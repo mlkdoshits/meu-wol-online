@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wake on LAN - Broadcast</title>
+    <title>Wake on LAN - Avançado</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -24,26 +24,34 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
         }
 
         .card {
             background-color: var(--card-bg);
-            padding: 2.5rem;
+            padding: 2rem;
             border-radius: 1rem;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
             border: 1px solid #334155;
         }
 
-        h1 { font-size: 1.6rem; margin-top: 0; margin-bottom: 0.5rem; text-align: center; }
-        p { color: var(--text-muted); font-size: 0.875rem; text-align: center; margin-bottom: 1.75rem; }
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 500; }
+        h1 { font-size: 1.5rem; margin-top: 0; margin-bottom: 0.25rem; text-align: center; }
+        p { color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem; }
+        
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-group { margin-bottom: 1rem; flex: 1; }
+        label { display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-muted); font-weight: 500; }
         
         input {
-            width: 100%; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #334155;
-            background-color: var(--input-bg); color: white; font-size: 1rem; box-sizing: border-box;
+            width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #334155;
+            background-color: var(--input-bg); color: white; font-size: 0.95rem; box-sizing: border-box;
         }
 
         input:focus { outline: 2px solid var(--primary); border-color: transparent; }
@@ -51,7 +59,7 @@
         button {
             width: 100%; padding: 0.85rem; background-color: var(--primary); color: white;
             border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: 600;
-            cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
+            cursor: pointer; transition: background 0.2s; margin-top: 0.75rem;
         }
 
         button:hover { background-color: var(--primary-hover); }
@@ -64,71 +72,79 @@
 <body>
 
 <div class="card">
-    <h1>Wake on LAN (Broadcast) 🌐</h1>
-    <p>Envie o sinal direcionado para sua rede</p>
+    <h1>Wake on LAN Router 🌐</h1>
+    <p>Configuração separada de domínio externo e rede interna</p>
 
     <form id="wolForm">
         <div class="form-group">
-            <label for="broadcast">IP de Broadcast ou DDNS de Destino</label>
-            <input type="text" id="broadcast" placeholder="Ex: 192.168.1.255 ou seu.ddns.net" required>
+            <label for="ddns">Endereço DDNS Público (Externo)</label>
+            <input type="text" id="ddns" placeholder="Ex: seudominio.ddns.net" required>
         </div>
 
         <div class="form-group">
-            <label for="mac">Endereço MAC do Alvo (Obrigatório do WoL)</label>
+            <label for="broadcast">IP de Broadcast Local (Interno)</label>
+            <input type="text" id="broadcast" placeholder="Ex: 192.168.1.255" required>
+        </div>
+
+        <div class="form-group">
+            <label for="mac">Endereço MAC da Placa de Rede</label>
             <input type="text" id="mac" placeholder="AA:BB:CC:DD:EE:FF" required 
                    pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$">
         </div>
 
         <div class="form-group">
-            <label for="port">Porta UDP (Geralmente 9)</label>
+            <label for="port">Porta UDP (Padrão: 9)</label>
             <input type="number" id="port" value="9" min="1" max="65535" required>
         </div>
 
-        <button type="submit">Enviar via Transmissão</button>
+        <button type="submit">Enviar Pacote Mágico</button>
     </form>
 
     <div id="statusMessage" class="status"></div>
 </div>
 
 <script>
-    // Recupera dados salvos localmente
+    // Recupera dados salvos localmente ao abrir a página
     document.addEventListener('DOMContentLoaded', () => {
-        if(localStorage.getItem('wol_bc_mac')) document.getElementById('mac').value = localStorage.getItem('wol_bc_mac');
-        if(localStorage.getItem('wol_bc_dest')) document.getElementById('broadcast').value = localStorage.getItem('wol_bc_dest');
-        if(localStorage.getItem('wol_bc_port')) document.getElementById('port').value = localStorage.getItem('wol_bc_port');
+        if(localStorage.getItem('wol_sep_ddns')) document.getElementById('ddns').value = localStorage.getItem('wol_sep_ddns');
+        if(localStorage.getItem('wol_sep_bcast')) document.getElementById('broadcast').value = localStorage.getItem('wol_sep_bcast');
+        if(localStorage.getItem('wol_sep_mac')) document.getElementById('mac').value = localStorage.getItem('wol_sep_mac');
+        if(localStorage.getItem('wol_sep_port')) document.getElementById('port').value = localStorage.getItem('wol_sep_port');
     });
 
     document.getElementById('wolForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const mac = document.getElementById('mac').value.trim();
+        const ddns = document.getElementById('ddns').value.trim();
         const broadcast = document.getElementById('broadcast').value.trim();
+        const mac = document.getElementById('mac').value.trim();
         const port = document.getElementById('port').value.trim();
         const statusDiv = document.getElementById('statusMessage');
 
-        // Salva os dados no navegador do usuário
-        localStorage.setItem('wol_bc_mac', mac);
-        localStorage.setItem('wol_bc_dest', broadcast);
-        localStorage.setItem('wol_bc_port', port);
+        // Memoriza os campos preenchidos na memória do navegador
+        localStorage.setItem('wol_sep_ddns', ddns);
+        localStorage.setItem('wol_sep_bcast', broadcast);
+        localStorage.setItem('wol_sep_mac', mac);
+        localStorage.setItem('wol_sep_port', port);
 
         statusDiv.style.display = 'block';
         statusDiv.className = 'status';
-        statusDiv.innerText = 'Enviando pacote mágico...';
+        statusDiv.innerText = 'Enviando pacote de transmissão...';
 
         try {
             const response = await fetch('/api/wake', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mac, broadcast, port: parseInt(port) })
+                body: JSON.stringify({ mac, ddns, broadcast, port: parseInt(port) })
             });
 
             const data = await response.json();
 
             if (response.ok && data.success) {
                 statusDiv.className = 'status success';
-                statusDiv.innerText = '⚡ Transmissão executada com sucesso!';
+                statusDiv.innerText = '⚡ Comandos enviados para o DDNS!';
             } else {
-                throw new Error(data.error || 'Erro na transmissão.');
+                throw new Error(data.error || 'Erro no processamento da rota.');
             }
         } catch (error) {
             statusDiv.className = 'status error';
