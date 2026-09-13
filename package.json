@@ -6,8 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "4.19.2",
-    "cors": "2.8.5",
-    "wakeonlan": "0.1.2"
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "node-wol": "^0.1.1"
   }
-}
