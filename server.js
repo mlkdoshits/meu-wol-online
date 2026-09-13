@@ -1,43 +1,33 @@
 const express = require('express');
 const cors = require('cors');
-const wol = require('node-wol');
+const wol = require('wake_on_lan');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Configuração explícita de CORS para liberar o seu site do GitHub Pages
-app.use(cors({
-    origin: '*',
-    methods: ['POST', 'GET', 'OPTIONS'],
-    allowedHeaders: ['Content-Type']
-}));
-
+app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
-// Rota para testar se o servidor responde de forma limpa
-app.get('/', (req, res) => {
-    res.json({ status: "Servidor WoL ativo e operando perfeitamente!" });
-});
+app.post('/api/wake', (req, res) => {
+    const { mac, host, port } = req.body;
 
-app.post('/wake', (req, res) => {
-    const { address, broadcast, port } = req.body;
-
-    if (!address || !broadcast) {
-        return res.status(400).json({ error: 'DDNS e IP de Broadcast são obrigatórios.' });
+    if (!mac || !host) {
+        return res.status(400).json({ error: 'MAC e DDNS são obrigatórios.' });
     }
 
-    const options = {
-        address: address,
-        port: port || 9
-    };
+    const targetPort = parseInt(port) || 9;
 
-    wol.wake(broadcast, options, (error) => {
+    wol.wake(mac, { address: host, port: targetPort }, (error) => {
         if (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Falha ao enviar o pacote via Broadcast.' });
+            console.error('Erro ao enviar pacote UDP:', error);
+            return res.status(500).json({ error: 'Erro interno ao emitir o pacote.' });
         }
-        return res.json({ success: true, message: `Pacote enviado para o broadcast ${broadcast}!` });
+        console.log(`Pacote enviado com sucesso para ${mac} via ${host}:${targetPort}`);
+        return res.json({ success: true, message: 'Pacote mágico enviado!' });
     });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Servidor rodando com sucesso na porta ${PORT}`);
+});
