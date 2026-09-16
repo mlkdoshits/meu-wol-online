@@ -1,0 +1,28 @@
+html<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel - Respostas</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; background: #222; color: #fff; }
+        h1 { font-size: 2rem; }
+        #resposta-atual { font-size: 4rem; margin-top: 40px; font-weight: bold; }
+        .SIM { color: #28a745; }
+        .NAO { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Aguardando resposta em tempo real...</h1>
+    <div id="resposta-atual">Nenhuma resposta ainda</div>
+
+    <script>
+        const socket = io();
+        socket.on('nova-resposta', (resposta) => {
+            const div = document.getElementById('resposta-atual');
+            div.innerText = resposta;
+            div.className = resposta;
+        });
+    </script>
+</body>
+</html>
