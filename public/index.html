@@ -14,6 +14,7 @@
             --accent-color: #3b82f6;
             --accent-hover: #2563eb;
             --input-bg: #0f172a;
+            --danger-color: #ef4444;
         }
 
         body {
@@ -32,7 +33,7 @@
             border: 1px solid var(--border-color);
             padding: 2.5rem;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 440px;
             box-sizing: border-box;
@@ -48,18 +49,17 @@
             margin: 0 0 0.5rem 0;
             color: var(--text-primary);
             font-weight: 700;
-            letter-spacing: -0.025em;
         }
 
         p {
             color: var(--text-secondary);
             font-size: 0.9rem;
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.5rem;
             line-height: 1.4;
         }
 
         .input-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.1rem;
         }
 
         label {
@@ -70,7 +70,7 @@
             color: var(--text-secondary);
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 0.75rem;
             background-color: var(--input-bg);
@@ -82,27 +82,28 @@
             transition: all 0.2s ease;
         }
 
-        input::placeholder {
-            color: #475569;
-        }
-
-        input:focus {
+        input:focus, select:focus {
             border-color: var(--accent-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
         button {
-            width: 100%;
+            flex: 1;
             padding: 0.8rem;
             background-color: var(--accent-color);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 0.75rem;
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
@@ -110,8 +111,24 @@
             background-color: var(--accent-hover);
         }
 
-        button:active {
-            transform: scale(0.98);
+        button.btn-secondary {
+            background-color: #334155;
+            color: #f8fafc;
+        }
+
+        button.btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        button.btn-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            flex: 0.4;
+        }
+
+        button.btn-danger:hover {
+            background-color: rgba(239, 68, 68, 0.3);
         }
 
         #status {
@@ -150,9 +167,21 @@
     <div class="card">
         <div class="header-icon">⚡</div>
         <h1>Wake on LAN</h1>
-        <p>Insira os parâmetros de rede para enviar o pacote mágico e ligar o seu dispositivo à distância.</p>
+        <p>Selecione um dispositivo salvo ou insira os dados para ligar à distância.</p>
         
+        <div class="input-group">
+            <label for="savedDevices">Dispositivos Salvos</label>
+            <select id="savedDevices" onchange="carregarDispositivo()">
+                <option value="">-- Novo Dispositivo / Selecionar --</option>
+            </select>
+        </div>
+
         <form id="wolForm">
+            <div class="input-group">
+                <label for="name">Nome do Dispositivo</label>
+                <input type="text" id="name" placeholder="Ex: Meu PC Principal" required>
+            </div>
+
             <div class="input-group">
                 <label for="mac">Endereço MAC *</label>
                 <input type="text" id="mac" placeholder="XX:XX:XX:XX:XX:XX" required>
@@ -178,13 +207,99 @@
                 <input type="text" id="secureon" placeholder="Senha se configurada">
             </div>
 
-            <button type="submit">Ligar Computador</button>
+            <div class="btn-group">
+                <button type="submit">Ligar Dispositivo</button>
+                <button type="button" class="btn-secondary" onclick="salvarDispositivo()">Salvar</button>
+                <button type="button" class="btn-danger" onclick="apagarDispositivo()" title="Excluir selecionado">🗑️</button>
+            </div>
         </form>
 
         <div id="status" class="hidden"></div>
     </div>
 
     <script>
+        // Carregar lista salva ao abrir a página
+        document.addEventListener('DOMContentLoaded', atualizarSelect);
+
+        function obterDispositivos() {
+            return JSON.parse(localStorage.getItem('wol_devices') || '{}');
+        }
+
+        function atualizarSelect() {
+            const select = document.getElementById('savedDevices');
+            const devices = obterDispositivos();
+            
+            select.innerHTML = '<option value="">-- Novo Dispositivo / Selecionar --</option>';
+            for (let nome in devices) {
+                let opt = document.createElement('option');
+                opt.value = nome;
+                opt.textContent = nome;
+                select.appendChild(opt);
+            }
+        }
+
+        function salvarDispositivo() {
+            const name = document.getElementById('name').value.trim();
+            const mac = document.getElementById('mac').value.trim();
+            
+            if (!name || !mac) {
+                alert('Preencha pelo menos o Nome e o Endereço MAC para salvar.');
+                return;
+            }
+
+            const devices = obterDispositivos();
+            devices[name] = {
+                mac,
+                ip: document.getElementById('ip').value,
+                subnet: document.getElementById('subnet').value,
+                port: document.getElementById('port').value,
+                secureon: document.getElementById('secureon').value
+            };
+
+            localStorage.setItem('wol_devices', JSON.stringify(devices));
+            atualizarSelect();
+            document.getElementById('savedDevices').value = name;
+            
+            alert(`Dispositivo "${name}" salvo com sucesso!`);
+        }
+
+        function carregarDispositivo() {
+            const nome = document.getElementById('savedDevices').value;
+            if (!nome) {
+                document.getElementById('wolForm').reset();
+                document.getElementById('subnet').value = '255.255.255.255';
+                document.getElementById('port').value = '9';
+                return;
+            }
+
+            const devices = obterDispositivos();
+            const dev = devices[nome];
+            if (dev) {
+                document.getElementById('name').value = nome;
+                document.getElementById('mac').value = dev.mac || '';
+                document.getElementById('ip').value = dev.ip || '';
+                document.getElementById('subnet').value = dev.subnet || '255.255.255.255';
+                document.getElementById('port').value = dev.port || '9';
+                document.getElementById('secureon').value = dev.secureon || '';
+            }
+        }
+
+        function apagarDispositivo() {
+            const nome = document.getElementById('savedDevices').value;
+            if (!nome) {
+                alert('Selecione um dispositivo salvo para excluir.');
+                return;
+            }
+
+            if (confirm(`Deseja realmente excluir o dispositivo "${nome}"?`)) {
+                const devices = obterDispositivos();
+                delete devices[nome];
+                localStorage.setItem('wol_devices', JSON.stringify(devices));
+                atualizarSelect();
+                document.getElementById('wolForm').reset();
+            }
+        }
+
         document.getElementById('wolForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
