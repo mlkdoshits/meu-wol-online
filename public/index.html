@@ -3,139 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wake on LAN Cloud (Protegido)</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --background: #0f172a;
-            --card-bg: #1e293b;
-            --input-bg: #0f172a;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--background);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 1rem;
-            box-sizing: border-box;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid #334155;
-        }
-
-        h1 { font-size: 1.5rem; margin-top: 0; margin-bottom: 0.25rem; text-align: center; }
-        p { color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-muted); font-weight: 500; }
-        
-        input {
-            width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #334155;
-            background-color: var(--input-bg); color: white; font-size: 0.95rem; box-sizing: border-box;
-        }
-
-        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
-        
-        button {
-            width: 100%; padding: 0.85rem; background-color: var(--primary); color: white;
-            border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: 600;
-            cursor: pointer; transition: background 0.2s; margin-top: 0.75rem;
-        }
-
-        button:hover { background-color: var(--primary-hover); }
-        
-        .status { margin-top: 1.25rem; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; text-align: center; display: none; }
-        .success { background-color: #065f46; color: #34d399; border: 1px solid #059669; }
-        .error { background-color: #991b1b; color: #fca5a5; border: 1px solid #dc2626; }
-    </style>
+    <title>Online Wake on LAN (Estilo Depicus)</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="card">
-    <h1>Wake on LAN Secure 🔒</h1>
-    <p>Ligue seu computador com acesso autenticado</p>
-
-    <form id="wolForm">
-        <div class="form-group">
-            <label for="password">Senha de Acesso</label>
-            <input type="password" id="password" placeholder="Digite a senha configurada" required>
-        </div>
-
-        <div class="form-group">
-            <label for="mac">Endereço MAC do Computador</label>
-            <input type="text" id="mac" placeholder="AA:BB:CC:DD:EE:FF" required 
-                   pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$">
-        </div>
-
-        <div class="form-group">
-            <label for="ip">IP de Broadcast da Rede (Ex: 192.168.1.255)</label>
-            <input type="text" id="ip" value="192.168.1.255" placeholder="Ex: 192.168.1.255 ou 255.255.255.255" required>
-        </div>
-
-        <button type="submit">Enviar Pacote Mágico</button>
-    </form>
-
-    <div id="statusMessage" class="status"></div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if(localStorage.getItem('wols_pass')) document.getElementById('password').value = localStorage.getItem('wols_pass');
-        if(localStorage.getItem('wols_mac')) document.getElementById('mac').value = localStorage.getItem('wols_mac');
-        if(localStorage.getItem('wols_ip')) document.getElementById('ip').value = localStorage.getItem('wols_ip');
-    });
-
-    document.getElementById('wolForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    <div class="card">
+        <h1>Online Wake On LAN</h1>
+        <p>Insira os parâmetros para enviar o pacote mágico (Magic Packet) pela rede.</p>
         
-        const password = document.getElementById('password').value;
-        const mac = document.getElementById('mac').value.trim();
-        const ip = document.getElementById('ip').value.trim();
-        const statusDiv = document.getElementById('statusMessage');
+        <form id="wolForm">
+            <div class="input-group">
+                <label for="mac">MAC Address:</label>
+                <input type="text" id="mac" placeholder="XX:XX:XX:XX:XX:XX" required>
+            </div>
 
-        localStorage.setItem('wols_pass', password);
-        localStorage.setItem('wols_mac', mac);
-        localStorage.setItem('wols_ip', ip);
+            <div class="input-group">
+                <label for="ip">IP Address ou FQDN (Opcional):</label>
+                <input type="text" id="ip" placeholder="Ex: 192.168.1.255 ou seu-dyns.net">
+            </div>
 
-        statusDiv.style.display = 'block';
-        statusDiv.className = 'status';
-        statusDiv.innerText = 'Autenticando e disparando pacote...';
+            <div class="input-group">
+                <label for="subnet">Subnet Mask (Opcional):</label>
+                <input type="text" id="subnet" placeholder="255.255.255.255" value="255.255.255.255">
+            </div>
 
-        try {
-            const response = await fetch('/api/wake', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mac, ip, password })
-            });
+            <div class="input-group">
+                <label for="port">Remote Port (Opcional):</label>
+                <input type="number" id="port" placeholder="9 ou 4343" value="9">
+            </div>
 
-            const data = await response.json();
+            <div class="input-group">
+                <label for="secureon">SecureON Password (Opcional):</label>
+                <input type="text" id="secureon" placeholder="Senha se aplicável">
+            </div>
 
-            if (response.ok && data.success) {
-                statusDiv.className = 'status success';
-                statusDiv.innerText = '⚡ Sucesso! Pacote mágico enviado para o broadcast.';
-            } else {
-                throw new Error(data.error || 'Falha ao processar.');
-            }
-        } catch (error) {
-            statusDiv.className = 'status error';
-            statusDiv.innerText = 'Erro: ' + error.message;
-        }
-    });
-</script>
+            <button type="submit">Ligar / Wake Up</button>
+        </form>
 
+        <div id="status" class="hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
