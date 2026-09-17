@@ -167,7 +167,7 @@
     <div class="card">
         <div class="header-icon">⚡</div>
         <h1>Wake on LAN</h1>
-        <p>Selecione um dispositivo salvo ou insira os dados para ligar à distância.</p>
+        <p>Selecione um dispositivo salvo ou informe o MAC e o IP/DDNS para ligar.</p>
         
         <div class="input-group">
             <label for="savedDevices">Dispositivos Salvos</label>
@@ -188,23 +188,18 @@
             </div>
 
             <div class="input-group">
-                <label for="ip">IP Address ou FQDN (Opcional)</label>
-                <input type="text" id="ip" placeholder="Ex: 192.168.1.255 ou seu-dyns.net">
+                <label for="ip">IP Address ou DDNS (Opcional)</label>
+                <input type="text" id="ip" placeholder="Ex: 192.168.1.50 ou meu-dominio.ddns.net">
             </div>
 
             <div class="input-group">
-                <label for="subnet">Subnet Mask (Opcional)</label>
-                <input type="text" id="subnet" placeholder="255.255.255.255" value="255.255.255.255">
-            </div>
-
-            <div class="input-group">
-                <label for="port">Remote Port (Opcional)</label>
-                <input type="number" id="port" placeholder="9 ou 4343" value="9">
+                <label for="port">Porta (Opcional)</label>
+                <input type="number" id="port" placeholder="9" value="9">
             </div>
 
             <div class="input-group">
                 <label for="secureon">SecureON Password (Opcional)</label>
-                <input type="text" id="secureon" placeholder="Senha se configurada">
+                <input type="text" id="secureon" placeholder="Senha se aplicável">
             </div>
 
             <div class="btn-group">
@@ -218,7 +213,6 @@
     </div>
 
     <script>
-        // Carregar lista salva ao abrir a página
         document.addEventListener('DOMContentLoaded', atualizarSelect);
 
         function obterDispositivos() {
@@ -251,7 +245,6 @@
             devices[name] = {
                 mac,
                 ip: document.getElementById('ip').value,
-                subnet: document.getElementById('subnet').value,
                 port: document.getElementById('port').value,
                 secureon: document.getElementById('secureon').value
             };
@@ -267,7 +260,6 @@
             const nome = document.getElementById('savedDevices').value;
             if (!nome) {
                 document.getElementById('wolForm').reset();
-                document.getElementById('subnet').value = '255.255.255.255';
                 document.getElementById('port').value = '9';
                 return;
             }
@@ -278,7 +270,6 @@
                 document.getElementById('name').value = nome;
                 document.getElementById('mac').value = dev.mac || '';
                 document.getElementById('ip').value = dev.ip || '';
-                document.getElementById('subnet').value = dev.subnet || '255.255.255.255';
                 document.getElementById('port').value = dev.port || '9';
                 document.getElementById('secureon').value = dev.secureon || '';
             }
@@ -305,7 +296,6 @@
 
             const mac = document.getElementById('mac').value;
             const ip = document.getElementById('ip').value;
-            const subnet = document.getElementById('subnet').value;
             const port = document.getElementById('port').value;
             const secureon = document.getElementById('secureon').value;
             
@@ -321,7 +311,6 @@
                     body: JSON.stringify({ 
                         mac, 
                         ip: ip || undefined, 
-                        subnet: subnet || undefined, 
                         port: port || undefined, 
                         secureon: secureon || undefined 
                     })
