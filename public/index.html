@@ -76,24 +76,14 @@
         </div>
 
         <div class="form-group">
-            <label for="ddns">Endereço DDNS Público</label>
-            <input type="text" id="ddns" placeholder="Ex: seudominio.ddns.net" required>
-        </div>
-
-        <div class="form-group">
             <label for="mac">Endereço MAC do Computador</label>
             <input type="text" id="mac" placeholder="AA:BB:CC:DD:EE:FF" required 
                    pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$">
         </div>
 
         <div class="form-group">
-            <label for="ip">IP do Equipamento (Rede Local)</label>
-            <input type="text" id="ip" placeholder="Ex: 192.168.1.50" required>
-        </div>
-
-        <div class="form-group">
-            <label for="port">Porta UDP (Padrão: 9)</label>
-            <input type="number" id="port" value="9" min="1" max="65535" required>
+            <label for="ip">IP de Broadcast da Rede (Ex: 192.168.1.255)</label>
+            <input type="text" id="ip" value="192.168.1.255" placeholder="Ex: 192.168.1.255 ou 255.255.255.255" required>
         </div>
 
         <button type="submit">Enviar Pacote Mágico</button>
@@ -105,46 +95,40 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         if(localStorage.getItem('wols_pass')) document.getElementById('password').value = localStorage.getItem('wols_pass');
-        if(localStorage.getItem('wols_ddns')) document.getElementById('ddns').value = localStorage.getItem('wols_ddns');
         if(localStorage.getItem('wols_mac')) document.getElementById('mac').value = localStorage.getItem('wols_mac');
         if(localStorage.getItem('wols_ip')) document.getElementById('ip').value = localStorage.getItem('wols_ip');
-        if(localStorage.getItem('wols_port')) document.getElementById('port').value = localStorage.getItem('wols_port');
     });
 
     document.getElementById('wolForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const password = document.getElementById('password').value;
-        const ddns = document.getElementById('ddns').value.trim();
         const mac = document.getElementById('mac').value.trim();
         const ip = document.getElementById('ip').value.trim();
-        const port = document.getElementById('port').value.trim();
         const statusDiv = document.getElementById('statusMessage');
 
         localStorage.setItem('wols_pass', password);
-        localStorage.setItem('wols_ddns', ddns);
         localStorage.setItem('wols_mac', mac);
         localStorage.setItem('wols_ip', ip);
-        localStorage.setItem('wols_port', port);
 
         statusDiv.style.display = 'block';
         statusDiv.className = 'status';
-        statusDiv.innerText = 'Autenticando e enviando pacote...';
+        statusDiv.innerText = 'Autenticando e disparando pacote...';
 
         try {
             const response = await fetch('/api/wake', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mac, ip, ddns, port: parseInt(port), password })
+                body: JSON.stringify({ mac, ip, password })
             });
 
             const data = await response.json();
 
             if (response.ok && data.success) {
                 statusDiv.className = 'status success';
-                statusDiv.innerText = '⚡ Autenticado! Sinal enviado para o DDNS/IP.';
+                statusDiv.innerText = '⚡ Sucesso! Pacote mágico enviado para o broadcast.';
             } else {
-                throw new Error(data.error || 'Falha na autenticação.');
+                throw new Error(data.error || 'Falha ao processar.');
             }
         } catch (error) {
             statusDiv.className = 'status error';
