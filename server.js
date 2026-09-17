@@ -24,29 +24,31 @@ const resolverDNS = (hostname) => {
 };
 
 app.post('/api/wake', async (req, res) => {
-    const { mac, ddns, port, password } = req.body;
+    const { mac, ip, ddns, port, password } = req.body;
 
     // Validação estrita da senha escolhida por você
     if (!password || password !== SENHA_SECRETA) {
         return res.status(401).json({ error: 'Senha incorreta ou não fornecida.' });
     }
 
-    if (!mac || !ddns) {
-        return res.status(400).json({ error: 'O Endereço MAC e o DDNS são obrigatórios.' });
+    if (!mac || !ddns || !ip) {
+        return res.status(400).json({ error: 'O Endereço MAC, o DDNS e o IP são obrigatórios.' });
     }
 
     const targetPort = parseInt(port) || 9;
 
     try {
-        const ipAlvo = await resolverDNS(ddns);
-        console.log(`DNS Resolvido: ${ddns} -> IP Público ${ipAlvo}`);
+        const ipPublico = await resolverDNS(ddns);
+        console.log(`DNS Resolvido: ${ddns} -> IP Público ${ipPublico}`);
 
-        wol.wake(mac, { address: ipAlvo, port: targetPort }, (error) => {
+        // O pacote será enviado para o IP de broadcast informado (ex: 192.168.1.255) 
+        // mas direcionado através do IP público do seu DDNS/Modem na porta configurada.
+        wol.wake(mac, { address: ip, port: targetPort }, (error) => {
             if (error) {
                 console.error('Erro no envio do pacote:', error);
                 return res.status(500).json({ error: 'Erro interno ao emitir o pacote.' });
             }
-            console.log(`Sucesso: Pacote enviado para MAC ${mac} no IP ${ipAlvo}:${targetPort}`);
+            console.log(`Sucesso: Pacote enviado para MAC ${mac} no Broadcast ${ip} via DDNS ${ipPublico}:${targetPort}`);
             return res.json({ success: true, message: 'Pacote disparado com sucesso!' });
         });
 
