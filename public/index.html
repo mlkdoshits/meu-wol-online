@@ -3,13 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Wake on LAN (Estilo Depicus)</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Online Wake on LAN</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+        }
+        h1 { font-size: 1.4rem; margin-top: 0; color: #1a1a1a; }
+        p { color: #555; font-size: 0.85rem; margin-bottom: 1.2rem; }
+        .input-group { margin-bottom: 0.9rem; }
+        label { display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.8rem; color: #333; }
+        input { width: 100%; padding: 0.55rem; border: 1px solid #ccd0d5; border-radius: 4px; box-sizing: border-box; font-size: 0.9rem; }
+        input:focus { border-color: #0066cc; outline: none; }
+        button { width: 100%; padding: 0.7rem; background-color: #0066cc; color: white; border: none; border-radius: 4px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 0.5rem; }
+        button:hover { background-color: #004fb3; }
+        #status { margin-top: 1rem; padding: 0.6rem; border-radius: 4px; text-align: center; font-size: 0.85rem; }
+        .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
+        .error { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
     <div class="card">
         <h1>Online Wake On LAN</h1>
-        <p>Insira os parâmetros para enviar o pacote mágico (Magic Packet) pela rede.</p>
+        <p>Insira os parâmetros para enviar o pacote mágico inspirado no Depicus.</p>
         
         <form id="wolForm">
             <div class="input-group">
@@ -43,6 +74,43 @@
         <div id="status" class="hidden"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('wolForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const mac = document.getElementById('mac').value;
+            const ip = document.getElementById('ip').value;
+            const subnet = document.getElementById('subnet').value;
+            const port = document.getElementById('port').value;
+            const secureon = document.getElementById('secureon').value;
+            
+            const statusDiv = document.getElementById('status');
+
+            statusDiv.className = 'hidden';
+            statusDiv.textContent = 'Enviando comando...';
+
+            try {
+                const response = await fetch('/api/wake', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        mac, 
+                        ip: ip || undefined, 
+                        subnet: subnet || undefined, 
+                        port: port || undefined, 
+                        secureon: secureon || undefined 
+                    })
+                });
+
+                const result = await response.json();
+
+                statusDiv.className = result.success ? 'success' : 'error';
+                statusDiv.textContent = result.message;
+            } catch (err) {
+                statusDiv.className = 'error';
+                statusDiv.textContent = 'Erro de conexão com o servidor.';
+            }
+        });
+    </script>
 </body>
 </html>
