@@ -1,13 +1,13 @@
 {
   "name": "wake-on-lan-online",
   "version": "1.0.0",
-  "description": "Servidor Node.js para Wake on LAN estilo Depicus",
+  "description": "Servidor Node.js para Wake on LAN",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "wake_on_lan": "^1.0.4"
+    "wake_on_lan": "1.0.0"
   }
 }
