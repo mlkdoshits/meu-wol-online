@@ -15,13 +15,11 @@ app.post('/api/wake', (req, res) => {
         return res.status(400).json({ success: false, message: 'O Endereço MAC é obrigatório.' });
     }
 
-    // Montando as opções avançadas inspiradas na Depicus
     const options = {};
-    
     if (ip) options.address = ip;
     if (subnet) options.subnet = subnet;
     if (port) options.port = parseInt(port, 10);
-    if (secureon) options.password = secureon; // Senha do SecureON se configurada
+    if (secureon) options.password = secureon;
 
     wol.wake(mac, options, (error) => {
         if (error) {
@@ -38,5 +36,5 @@ app.post('/api/wake', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor Wake on LAN rodando na porta ${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
