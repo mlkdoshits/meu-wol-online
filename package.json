@@ -1,7 +1,7 @@
 {
-  "name": "wake-on-lan-cloud",
+  "name": "wake-on-lan-online",
   "version": "1.0.0",
-  "description": "Painel Wake on LAN seguro com suporte a Broadcast",
+  "description": "Servidor Node.js para Wake on LAN estilo Depicus",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
