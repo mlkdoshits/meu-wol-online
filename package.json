@@ -1,14 +1,13 @@
 {
-  "name": "meu-wol-online",
-  "version": "1.1.0",
-  "description": "Interface Avançada de Wake On LAN Online",
+  "name": "wake-on-lan-cloud",
+  "version": "1.0.0",
+  "description": "Painel Wake on LAN seguro com suporte a Broadcast",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "wake_on_lan": "^1.0.0"
+    "wake_on_lan": "^1.0.4"
   }
 }
