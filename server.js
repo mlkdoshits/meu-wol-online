@@ -1,63 +1,48 @@
 const express = require('express');
-const cors = require('cors');
 const wol = require('wake_on_lan');
-const dns = require('dns');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔒 SUA SENHA CONFIGURADA COM SUCESSO
-const SENHA_SECRETA = "12345fsc"; 
+// Defina a senha de acesso protegida aqui ou via variável de ambiente
+const ACCESS_PASSWORD = process.env.WOL_PASSWORD || 'sua_senha_segura';
 
-app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const resolverDNS = (hostname) => {
-    return new Promise((resolve, reject) => {
-        if (/^[0-9.]+$/.test(hostname)) return resolve(hostname);
-        dns.lookup(hostname, (err, address) => {
-            if (err) reject(err);
-            else resolve(address);
-        });
+app.post('/api/wake', (req, res) => {
+    const { mac, ip, password } = req.body;
+
+    // Validação da senha
+    if (!password || password !== ACCESS_PASSWORD) {
+        return res.status(401).json({ success: false, error: 'Senha incorreta!' });
+    }
+
+    if (!mac) {
+        return res.status(400).json({ success: false, error: 'Endereço MAC não informado.' });
+    }
+
+    // Configuração do Wake on LAN
+    // Se o IP/Broadcast não for informado, usa o broadcast global por padrão
+    const options = {
+        address: ip && ip.trim() !== '' ? ip.trim() : '255.255.255.255',
+        port: 9 // Porta padrão WoL
+    };
+
+    console.log(`Enviando pacote Mágico para MAC: ${mac} via endereço/broadcast: ${options.address}`);
+
+    wol.wake(mac, options, (error) => {
+        if (error) {
+            console.error('Erro ao enviar WoL:', error);
+            return res.status(500).json({ success: false, error: 'Falha ao enviar o pacote mágico: ' + error.message });
+        } else {
+            console.log('Pacote mágico enviado com sucesso!');
+            return res.json({ success: true, message: 'Pacote mágico disparado com sucesso!' });
+        }
     });
-};
-
-app.post('/api/wake', async (req, res) => {
-    const { mac, ip, ddns, port, password } = req.body;
-
-    // Validação estrita da senha escolhida por você
-    if (!password || password !== SENHA_SECRETA) {
-        return res.status(401).json({ error: 'Senha incorreta ou não fornecida.' });
-    }
-
-    if (!mac || !ddns || !ip) {
-        return res.status(400).json({ error: 'O Endereço MAC, o DDNS e o IP são obrigatórios.' });
-    }
-
-    const targetPort = parseInt(port) || 9;
-
-    try {
-        const ipPublico = await resolverDNS(ddns);
-        console.log(`DNS Resolvido: ${ddns} -> IP Público ${ipPublico}`);
-
-        // O pacote será enviado para o IP de broadcast informado (ex: 192.168.1.255) 
-        // mas direcionado através do IP público do seu DDNS/Modem na porta configurada.
-        wol.wake(mac, { address: ip, port: targetPort }, (error) => {
-            if (error) {
-                console.error('Erro no envio do pacote:', error);
-                return res.status(500).json({ error: 'Erro interno ao emitir o pacote.' });
-            }
-            console.log(`Sucesso: Pacote enviado para MAC ${mac} no Broadcast ${ip} via DDNS ${ipPublico}:${targetPort}`);
-            return res.json({ success: true, message: 'Pacote disparado com sucesso!' });
-        });
-
-    } catch (dnsError) {
-        console.error('Falha ao resolver o domínio DDNS:', dnsError);
-        return res.status(400).json({ error: 'Não foi possível encontrar o IP desse DDNS. Verifique o endereço.' });
-    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor protegido ativo na porta ${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
